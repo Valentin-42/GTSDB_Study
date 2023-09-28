@@ -1,0 +1,45 @@
+3_classes : # 0 : prohibitory 1 : danger 2 : mandatory 3 : other
+  0 : 0 # speed limit 20
+  1 : 0 # speed limit 30
+  2 : 0 # speed limit 50
+  3 : 0 # speed limit 60
+  4 : 0 # speed limit 70
+  5 : 0 # speed limit 80
+  6 : 3 # restriction ends 80 (other)
+  7 : 0 # speed limit 100 (prohibitory)
+  8 : 0 # speed limit 120
+  9 : 0 # no overtaking 
+  10 : 0 # no overtaking (trucks)
+  11 : 1 # priority at next intersection
+  12 : 3 # priority road
+  13 : 3 # give way
+  14 : 3 # stop 
+  15 : 0 # no traffic both ways 
+  16 : 0 # no trucks
+  17 : 3 # no entry 
+  18 : 1 # danger
+  19 : 1 # bend left 
+  20 : 1 # bend right 
+  21 : 1 # bend 
+  22 : 1 # uneven road 
+  23 : 1 # slippery road 
+  24 : 1 # road narrows 
+  25 : 1 # construction 
+  26 : 1 #  traffic signal 
+  27 : 1 # pedestrian crossing 
+  28 : 1 # school crossing 
+  29 : 1 # cycles crossing 
+  30 : 1 # snow 
+  31 : 1 # animals 
+  32 : 3 # restriction ends 
+  33 : 2 # go right 
+  34 : 2 # go left 
+  35 : 2 # go straight 
+  36 : 2 # go right or straight 
+  37 : 2 # go left or straight 
+  38 : 2 # keep right
+  39 : 2 # keep left 
+  40 : 2 # roundabout
+  41 : 3 # restriction ends (overtaking)
+  42 : 3 # restriction ends (overtaking (trucks))
+
