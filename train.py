@@ -103,6 +103,82 @@ def hpp_tuning(path_to_weights, path_to_config, epochs) :
             break
 
 
+
+def train_with_augmentation(path_to_weights, path_to_config,epochs) :
+
+    model = YOLO(path_to_weights)
+
+    # Default params
+    epochs   = 200
+    imgsz    = 1024
+    save_period = 100
+    data     = path_to_config
+    device   = 0
+    exist_ok = True
+    cache = True
+    batch = 64
+    project_name = "GTSDB_Training"
+    name = 'second_training_with_augmentation'
+    optimizer = 'SGD'
+    lr0 =float(0.01)
+    lrf =float(0.01)
+    box = 7.5
+    cls = 0.5
+
+    augment=True
+    hsv_h= 0  # (float) image HSV-Hue augmentation (fraction)
+    hsv_s= 0  # (float) image HSV-Saturation augmentation (fraction)
+    hsv_v= 0  # (float) image HSV-Value augmentation (fraction)
+    degrees= 0 # (float) image rotation (+/- deg)
+    translate= 0  # (float) image translation (+/- fraction)
+    scale= 0.4  # (float) image scale (+/- gain)
+    shear= 0  # (float) image shear (+/- deg)
+    perspective= 0.3  # (float) image perspective (+/- fraction), range 0-0.001
+    flipud= 0.0  # (float) image flip up-down (probability)
+    fliplr= 0.5  # (float) image flip left-right (probability)
+    mosaic= 0.4  # (float) image mosaic (probability)
+    mixup= 0.3  # (float) image mixup (probability)
+    copy_paste= 0.5  # (float) segment copy-paste (probability)
+
+    resume = False
+    # 
+    print("Starting Training ...")
+
+    results = model.train(
+        data = data,
+        epochs = epochs,
+        imgsz = imgsz,
+        save_period = save_period,
+        device = device,
+        exist_ok = exist_ok,
+        batch = batch,
+        project = project_name,
+        name = name,
+        cache = cache,
+        patience = epochs,
+        optimizer = optimizer,
+        lr0 = lr0,
+        lrf = lrf,
+        augment=augment,
+        mosaic = mosaic,
+        mixup = mixup,
+        hsv_h = hsv_h,
+        hsv_s = hsv_s,
+        hsv_v = hsv_v,
+        degrees = degrees,
+        translate = translate,
+        shear = shear,
+        perspective = perspective,
+        flipud = flipud,
+        fliplr = fliplr,
+        copy_paste = copy_paste,
+        scale = scale,
+        box = box,
+        resume = resume
+    )
+
+
+
 def train(path_to_weights, path_to_config,epochs) :
 
     model = YOLO(path_to_weights)
@@ -190,4 +266,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # optimizer_tuning(args.w, args.c)
     # hpp_tuning(args.w, args.c, args.e)
-    train(args.w, args.c,args.e)
+    train_with_augmentation(args.w, args.c,args.e)

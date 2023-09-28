@@ -160,9 +160,32 @@ def ppm_to_png(ppm_folder_path) :
     print("Images converted from ppm to png")
     return None
 
-# create a function extract_json that
-# load a json file 
-# look in "output" / "frames" 
-# Inside there is "frame_number" for the image name
-# "RoIs" formated as "class,xtopleft,ytopleft,width,height;"
-# return a dataframe df[["imagename", "object-class", "x_center", "y_center", "width", "height"]]
+
+def extract_json(json_path):
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+    frames = data['output']['frames']
+    rows = []
+    for frame in frames:
+        frame_number = frame['frame_number']
+        rois = frame['RoIs'].split(';')
+        for roi in rois:
+            if roi != '' :
+                roi_parts = roi.split(',')
+                obj_class = roi_parts[0]
+                x_top_left = int(roi_parts[1])
+                y_top_left = int(roi_parts[2])
+                width = int(roi_parts[3])
+                height = int(roi_parts[4][:-1])
+                x_center = x_top_left + width / 2
+                y_center = y_top_left + height / 2
+                rows.append([frame_number, obj_class, x_center, y_center, width, height])
+    df = pd.DataFrame(rows, columns=["imagename", "object-class", "x_center", "y_center", "width", "height"])
+    return df
+
+
+if __name__ == "__main__":
+    df = (extract_json("GTSDB.json"))
+    print(df[df["object-class"] == "pn"])
+
+    

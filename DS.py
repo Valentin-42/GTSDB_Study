@@ -403,6 +403,7 @@ class Dataset() :
 
         # ask user to confirm the repartition of the classes along the sets, if key=q then quit
         k = input("Press [Enter] : continue | [q] quit | ? : ")
+        plt.close()
         if k == "q" :
             exit()
         self.__create_fld_architecture()

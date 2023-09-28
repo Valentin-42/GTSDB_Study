@@ -14,8 +14,6 @@ def main():
     GTSDB_toolbox.format_annotation_GTSDB_to_YOLOv3(working_dir + "gt.txt", save=True, merge_classes=False, merge_classes_dict=mapping["3_classes"], normalize=True)
     dataset = DS("./datasets/","GTSDB",True,"./params/GTSDB_params.yml")
     
-
-    
 def show() :
     import os 
     import cv2
@@ -28,7 +26,6 @@ def show() :
     fig, ax = plt.subplots(2,2)
     j,k = 0,0
     for i,img in enumerate(os.listdir(image_dir)) :
-        print(j,k)
         img = GTSDB_toolbox.visualize(image_dir + img, label_dir + img.split(".")[0] + ".txt")
         ax[k,j].imshow(img)
         j +=1
@@ -43,7 +40,6 @@ def show() :
             k = 0
             if key == "q" :
                 break
-
 
 
 if __name__ == "__main__":
