@@ -5,5 +5,5 @@ ratio_val : 0.1
 ratio_test : 0.2
 
 classes_names_path : ./params/classes.names
-raw_images_path : ./datasets/raw/all/png/
-raw_labels_path : ./datasets/raw/all/labels/
+raw_images_path : ./datasets/full/raw/all/png/
+raw_labels_path : ./datasets/full/raw/all/labels/
