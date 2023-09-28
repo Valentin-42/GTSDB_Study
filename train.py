@@ -109,7 +109,7 @@ def train(path_to_weights, path_to_config,epochs) :
 
     # Default params
     epochs   = int(epochs)
-    imgsz    = (1360,800)
+    imgsz    = [1360,800]
     save_period = 100
     data     = path_to_config
     device   = 0
