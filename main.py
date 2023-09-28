@@ -21,16 +21,31 @@ def show() :
     import cv2
     import matplotlib.pyplot as plt
 
-    label_dir = "./datasets/full/raw/labels/"
-    image_dir = "./datasets/full/raw/png/"
+    label_dir = "./datasets/GTSDB/train/labels/"
+    image_dir = "./datasets/GTSDB/train/images/"
 
-    for img in os.listdir(image_dir) :
-        print(image_dir + img)
-        GTSDB_toolbox.visualize(image_dir + img, label_dir + img.split(".")[0] + ".txt")
-        k =input("Press Enter to continue...")
-        if k == "q" :
-            break
+    # plot image 4 by 4 
+    fig, ax = plt.subplots(2,2)
+    j,k = 0,0
+    for i,img in enumerate(os.listdir(image_dir)) :
+        print(j,k)
+        img = GTSDB_toolbox.visualize(image_dir + img, label_dir + img.split(".")[0] + ".txt")
+        ax[k,j].imshow(img)
+        j +=1
+        if j == 2 :
+            k+=1
+            j=0
+        if k == 2:
+            plt.show()
+            key = input("Press Enter to continue...")
+            fig, ax = plt.subplots(2,2)
+            j = 0
+            k = 0
+            if key == "q" :
+                break
+
+
 
 if __name__ == "__main__":
-    main()
-    # show()
+    # main()
+    show()

@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import shutil
+import json
 
 # Load annotation csv file
 # 00000.ppm;774;411;815;446;11 is an example of a line in the csv file
@@ -129,18 +130,15 @@ def visualize(img, label) :
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     # open label file and read it
     label = pd.read_csv(label, sep=" ", header=None)
-    print(label)
     # plot the bounding boxes
     for _, row in label.iterrows() :
-        print(img.shape)
         h, w, _ = img.shape
         x_center = int(row[1] * w)
         y_center = int(row[2] * h)
         width = int(row[3] * w)
         height = int(row[4] * h)
         cv2.rectangle(img, (x_center - width//2, y_center - height//2), (x_center + width//2, y_center + height//2), (0, 255, 0), 3)
-    plt.imshow(img)
-    plt.show()
+    return img
 
 
 # create a function that convert ppm to png
@@ -161,3 +159,10 @@ def ppm_to_png(ppm_folder_path) :
     
     print("Images converted from ppm to png")
     return None
+
+# create a function extract_json that
+# load a json file 
+# look in "output" / "frames" 
+# Inside there is "frame_number" for the image name
+# "RoIs" formated as "class,xtopleft,ytopleft,width,height;"
+# return a dataframe df[["imagename", "object-class", "x_center", "y_center", "width", "height"]]
