@@ -103,7 +103,7 @@ def hpp_tuning(path_to_weights, path_to_config, epochs) :
             break
 
 
-def train(path_to_weights, path_to_config,epochs) :
+def train(path_to_weights, path_to_config,epochs, augment) :
 
     model = YOLO(path_to_weights)
 
@@ -123,11 +123,22 @@ def train(path_to_weights, path_to_config,epochs) :
     lrf =float(0.01)
     box = 7.5
     cls = 0.5
-    augment = False
-    mosaic = 0
-    mixup  = 0
-    copy_paste = 0
-    scale = 0
+    if not augment :
+        hsv_h= 0  # (float) image HSV-Hue augmentation (fraction)
+        hsv_s= 0  # (float) image HSV-Saturation augmentation (fraction)
+        hsv_v= 0  # (float) image HSV-Value augmentation (fraction)
+        degrees= 0 # (float) image rotation (+/- deg)
+        translate= 0  # (float) image translation (+/- fraction)
+        scale= 0  # (float) image scale (+/- gain)
+        shear= 0  # (float) image shear (+/- deg)
+        perspective= 0.0  # (float) image perspective (+/- fraction), range 0-0.001
+        flipud= 0.0  # (float) image flip up-down (probability)
+        fliplr= 0  # (float) image flip left-right (probability)
+        mosaic= 0  # (float) image mosaic (probability)
+        mixup= 0.0  # (float) image mixup (probability)
+        copy_paste= 0.0  # (float) segment copy-paste (probability)
+
+
     resume = False
     # 
     print("Starting Training ...")
@@ -150,8 +161,19 @@ def train(path_to_weights, path_to_config,epochs) :
         augment=augment,
         mosaic = mosaic,
         mixup = mixup,
+        hsv_h = hsv_h,
+        hsv_s = hsv_s,
+        hsv_v = hsv_v,
+        degrees = degrees,
+        translate = translate,
+        scale = scale,
+        shear = shear,
+        perspective = perspective,
+        flipud = flipud,
+        fliplr = fliplr,
         copy_paste = copy_paste,
         scale = scale,
+        box = box,
         resume = resume
     )
 
@@ -160,10 +182,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-w", default="yolov8n.pt", help = "path to .pt")
-    parser.add_argument("-c", default="./configs/nano/data_4classes_original.yaml", help = "data file path")
+    parser.add_argument("-c", default="./param/", help = "data file path")
     parser.add_argument("-e", default=100, help = "nbs of epochs")
+    parser.add_argument("-a", default=True, help = "apply augment")
+
 
     args = parser.parse_args()
     # optimizer_tuning(args.w, args.c)
     # hpp_tuning(args.w, args.c, args.e)
-    train(args.w, args.c,args.e)
+    train(args.w, args.c,args.e, args.a)
