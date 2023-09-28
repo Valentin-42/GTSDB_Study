@@ -25,10 +25,10 @@ def format_annotation_GTSDB_to_YOLOv3(annotation_csv_path, save=False, img_ext =
     df["height"] = df["bottomRow"] - df["topRow"]
     if normalize :
         w,h = cv2.imread(os.path.join(os.path.dirname(annotation_csv_path), df["imagename"].iloc[0]).replace("\\", "/")).shape[:2]
-        df["leftCol"] = df["leftCol"] / w
-        df["rightCol"] = df["rightCol"] / w
-        df["topRow"] = df["topRow"] / h
-        df["bottomRow"] = df["bottomRow"] / h
+        df["leftCol"] = df["leftCol"] / h
+        df["rightCol"] = df["rightCol"] / h
+        df["topRow"] = df["topRow"] / w
+        df["bottomRow"] = df["bottomRow"] / w 
         df["width"] = df["width"] / w
         df["height"] = df["height"] / h
         df["image_width"] = w
