@@ -184,7 +184,7 @@ def train(path_to_weights, path_to_config,epochs) :
     model = YOLO(path_to_weights)
 
     # Default params
-    epochs   = int(epochs)
+    epochs   = 300
     imgsz    = 1024
     save_period = 100
     data     = path_to_config
@@ -193,7 +193,7 @@ def train(path_to_weights, path_to_config,epochs) :
     cache = True
     batch = 64
     project_name = "GTSDB_Training"
-    name = 'first_training'
+    name = 'third_training_like_first_but_big_epochs'
     optimizer = 'SGD'
     lr0 =float(0.01)
     lrf =float(0.01)
@@ -266,4 +266,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # optimizer_tuning(args.w, args.c)
     # hpp_tuning(args.w, args.c, args.e)
-    train_with_augmentation(args.w, args.c,args.e)
+    # train_with_augmentation(args.w, args.c,args.e)
+    train(args.w, args.c,args.e)
