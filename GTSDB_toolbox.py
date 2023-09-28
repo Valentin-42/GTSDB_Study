@@ -23,22 +23,22 @@ def format_annotation_GTSDB_to_YOLOv3(annotation_csv_path, save=False, img_ext =
     df["object-class"] = df["ClassID"]
     df["width"] = df["rightCol"] - df["leftCol"]
     df["height"] = df["bottomRow"] - df["topRow"]
+
+    df["x_center"] = (df["leftCol"] + df["rightCol"]).div(2) 
+    df["y_center"] = (df["topRow"] + df["bottomRow"]).div(2)
+
     if normalize :
-        w,h = cv2.imread(os.path.join(os.path.dirname(annotation_csv_path), df["imagename"].iloc[0]).replace("\\", "/")).shape[:2]
-        df["leftCol"] = df["leftCol"] / h
-        df["rightCol"] = df["rightCol"] / h
-        df["topRow"] = df["topRow"] / w
-        df["bottomRow"] = df["bottomRow"] / w 
-        df["width"] = df["width"] / w
-        df["height"] = df["height"] / h
-        df["image_width"] = w
+        print("Normalizing coordinates")
+        h,w,_ = cv2.imread(os.path.join(os.path.dirname(annotation_csv_path), df["imagename"].iloc[0]).replace("\\", "/")).shape
+        df["image_width"]  = w
         df["image_height"] = h
-        
-    df["x_center"] = (df["leftCol"] + df["rightCol"]) / 2
-    df["y_center"] = (df["topRow"] + df["bottomRow"]) / 2
-
+        df["x_center"] =  df["x_center"].div(w) 
+        df["y_center"] = df["y_center"].div(h) 
+        df["width"] =  df["width"].div(w) 
+        df["height"] = df["height"].div(h) 
+    
     df = df[["imagename", "object-class", "x_center", "y_center", "width", "height"]]
-
+    print(df.head(5))
     if save :
         # create a folder called label in the same directory as the images folder and save the txt files in it
         # if it already exists, delete it and create a new one
@@ -120,6 +120,28 @@ def plot_bounding_boxes(df, root="./") :
             plt.savefig("img_set_{}.png".format(i))
 
     return images_with_bounding_boxes
+
+
+#visualize function loads a label txt file with format <object-class> <x_center> <y_center> <width> <height> normalized
+# and displays the image with the bounding boxes 
+def visualize(img, label) :
+    img = cv2.imread(img)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # open label file and read it
+    label = pd.read_csv(label, sep=" ", header=None)
+    print(label)
+    # plot the bounding boxes
+    for _, row in label.iterrows() :
+        print(img.shape)
+        h, w, _ = img.shape
+        x_center = int(row[1] * w)
+        y_center = int(row[2] * h)
+        width = int(row[3] * w)
+        height = int(row[4] * h)
+        cv2.rectangle(img, (x_center - width//2, y_center - height//2), (x_center + width//2, y_center + height//2), (0, 255, 0), 3)
+    plt.imshow(img)
+    plt.show()
+
 
 # create a function that convert ppm to png
 # given a folder with ppm images

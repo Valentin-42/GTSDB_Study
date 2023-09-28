@@ -109,13 +109,13 @@ def train(path_to_weights, path_to_config,epochs) :
 
     # Default params
     epochs   = int(epochs)
-    imgsz    = [1360,800]
+    imgsz    = 1024
     save_period = 100
     data     = path_to_config
     device   = 0
     exist_ok = True
     cache = True
-    batch = 128
+    batch = 64
     project_name = "GTSDB_Training"
     name = 'first_training'
     optimizer = 'SGD'
