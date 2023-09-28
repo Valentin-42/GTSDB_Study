@@ -1,6 +1,8 @@
-train: ./datasets/GTSDB/train/images/
-val: ./datasets/GTSDB/val/images/
-test: ./datasets/GTSDB/test/images/
+path : /mnt/gpu_storage/traffic-sign-detection/GTSDB_Study
+
+train: /datasets/GTSDB/train/images/
+val: /datasets/GTSDB/val/images/
+test: /datasets/GTSDB/test/images/
 
 names: 
 0 : speed limit 20 
