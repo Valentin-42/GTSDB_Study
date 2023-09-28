@@ -123,6 +123,7 @@ def train(path_to_weights, path_to_config,epochs, augment) :
     lrf =float(0.01)
     box = 7.5
     cls = 0.5
+    
     if not augment :
         hsv_h= 0  # (float) image HSV-Hue augmentation (fraction)
         hsv_s= 0  # (float) image HSV-Saturation augmentation (fraction)
@@ -166,7 +167,6 @@ def train(path_to_weights, path_to_config,epochs, augment) :
         hsv_v = hsv_v,
         degrees = degrees,
         translate = translate,
-        scale = scale,
         shear = shear,
         perspective = perspective,
         flipud = flipud,
