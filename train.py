@@ -103,7 +103,7 @@ def hpp_tuning(path_to_weights, path_to_config, epochs) :
             break
 
 
-def train(path_to_weights, path_to_config,epochs, augment) :
+def train(path_to_weights, path_to_config,epochs) :
 
     model = YOLO(path_to_weights)
 
@@ -124,6 +124,7 @@ def train(path_to_weights, path_to_config,epochs, augment) :
     box = 7.5
     cls = 0.5
 
+    augment=False
     hsv_h= 0  # (float) image HSV-Hue augmentation (fraction)
     hsv_s= 0  # (float) image HSV-Saturation augmentation (fraction)
     hsv_v= 0  # (float) image HSV-Value augmentation (fraction)
@@ -189,4 +190,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # optimizer_tuning(args.w, args.c)
     # hpp_tuning(args.w, args.c, args.e)
-    train(args.w, args.c,args.e, args.a)
+    train(args.w, args.c,args.e)
