@@ -123,21 +123,20 @@ def train(path_to_weights, path_to_config,epochs, augment) :
     lrf =float(0.01)
     box = 7.5
     cls = 0.5
-    
-    if not augment :
-        hsv_h= 0  # (float) image HSV-Hue augmentation (fraction)
-        hsv_s= 0  # (float) image HSV-Saturation augmentation (fraction)
-        hsv_v= 0  # (float) image HSV-Value augmentation (fraction)
-        degrees= 0 # (float) image rotation (+/- deg)
-        translate= 0  # (float) image translation (+/- fraction)
-        scale= 0  # (float) image scale (+/- gain)
-        shear= 0  # (float) image shear (+/- deg)
-        perspective= 0.0  # (float) image perspective (+/- fraction), range 0-0.001
-        flipud= 0.0  # (float) image flip up-down (probability)
-        fliplr= 0  # (float) image flip left-right (probability)
-        mosaic= 0  # (float) image mosaic (probability)
-        mixup= 0.0  # (float) image mixup (probability)
-        copy_paste= 0.0  # (float) segment copy-paste (probability)
+
+    hsv_h= 0  # (float) image HSV-Hue augmentation (fraction)
+    hsv_s= 0  # (float) image HSV-Saturation augmentation (fraction)
+    hsv_v= 0  # (float) image HSV-Value augmentation (fraction)
+    degrees= 0 # (float) image rotation (+/- deg)
+    translate= 0  # (float) image translation (+/- fraction)
+    scale= 0  # (float) image scale (+/- gain)
+    shear= 0  # (float) image shear (+/- deg)
+    perspective= 0.0  # (float) image perspective (+/- fraction), range 0-0.001
+    flipud= 0.0  # (float) image flip up-down (probability)
+    fliplr= 0  # (float) image flip left-right (probability)
+    mosaic= 0  # (float) image mosaic (probability)
+    mixup= 0.0  # (float) image mixup (probability)
+    copy_paste= 0.0  # (float) segment copy-paste (probability)
 
 
     resume = False
