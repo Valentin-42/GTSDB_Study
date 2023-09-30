@@ -5,7 +5,7 @@ import argparse
 def detect(weights) :
     
     model = YOLO(weights)
-    model('./datasets/GTSDB/test/images/', save=True, save_txt=True, save_conf=True, conf_thres=0.3)
+    model('./datasets/GTSDB/test/images/', save=True, save_txt=True, save_conf=True)
 
     print("Done!")
 
