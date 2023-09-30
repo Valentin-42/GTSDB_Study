@@ -10,8 +10,15 @@ def detect(weights) :
     print("Done!")
 
 
+def detect_v2(weights) :
+    
+    model = YOLO(weights)
+    metrics = model.val(split="test")
+
+    print(metrics)
+
 if __name__ == "__main__" :
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-w", default="yolov8n.pt", help = "path to .pt")
-    detect(parser.parse_args().w)
+    detect_v2(parser.parse_args().w)
