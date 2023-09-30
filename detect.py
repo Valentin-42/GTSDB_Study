@@ -1,4 +1,4 @@
-import YOLO
+from ultralytics import YOLO
 import os
 import argparse
 
