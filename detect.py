@@ -48,6 +48,7 @@ def detect_v2(weights) :
     df_class["class_name"] = [metrics.names[i] for i in ap_class_index]
     maps = []
     for i in ap_class_index :
+        print(metrics.class_result(i))
         maps.append(metrics.class_result(i))
 
     df_class["mAP"] = maps
