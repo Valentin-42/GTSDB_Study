@@ -15,6 +15,7 @@ def detect_v2(weights) :
     model = YOLO(weights)
     metrics = model.val(split="test")
 
+    print("Done!")
     print(metrics)
 
 if __name__ == "__main__" :
