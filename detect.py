@@ -41,15 +41,19 @@ def detect_v2(weights) :
     df["postprocess time"] = speed["postprocess"]
     df.to_csv("./results.csv", index=False)
 
+    print("Results!")
+
+
     df_class = pd.DataFrame(ap_class_index, columns=["class_index"])
     df_class["class_name"] = [metrics.names[i] for i in ap_class_index]
     maps = []
-    
     for i in ap_class_index :
         maps.append(metrics.class_result(i))
 
+    df_class["mAP"] = maps
+    df_class.to_csv("./results_class.csv", index=False)
 
-
+    print("Results_per_class!")
 
 
 
