@@ -129,15 +129,22 @@ def visualize(img, label) :
     img = cv2.imread(img)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     # open label file and read it
-    label = pd.read_csv(label, sep=" ", header=None)
+    if not isinstance(label, pd.DataFrame) :
+        label = pd.read_csv(label, sep=" ", header=None)
     # plot the bounding boxes
     for _, row in label.iterrows() :
         h, w, _ = img.shape
-        x_center = int(row[1] * w)
-        y_center = int(row[2] * h)
-        width = int(row[3] * w)
-        height = int(row[4] * h)
-        cv2.rectangle(img, (x_center - width//2, y_center - height//2), (x_center + width//2, y_center + height//2), (0, 255, 0), 3)
+        x_center = int(row[1])
+        y_center = int(row[2])
+        width = int(row[3])
+        height = int(row[4])
+        if x_center < 1 and y_center < 1 and width < 1 and height < 1 :
+            x_center = int(x_center * w)
+            y_center = int(y_center * h)
+            width = int(width * w)
+            height = int(height * h)
+
+        cv2.rectangle(img, (x_center - width//2, y_center - height//2), (x_center + width//2, y_center + height//2), (0, 255, 0), 2)
     return img
 
 
@@ -176,9 +183,9 @@ def extract_json(json_path):
                 x_top_left = int(roi_parts[1])
                 y_top_left = int(roi_parts[2])
                 width = int(roi_parts[3])
-                height = int(roi_parts[4][:-1])
-                x_center = x_top_left + width / 2
-                y_center = y_top_left + height / 2
+                height = int(roi_parts[4])
+                x_center = x_top_left + (width / 2)
+                y_center = y_top_left + (height / 2)
                 rows.append([frame_number, obj_class, x_center, y_center, width, height])
     df = pd.DataFrame(rows, columns=["imagename", "object-class", "x_center", "y_center", "width", "height"])
     return df

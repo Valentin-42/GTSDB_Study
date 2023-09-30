@@ -2,3 +2,4 @@ datasets
 __pycache__
 GTSDB_Training
 yolov8n.pt
+classify
