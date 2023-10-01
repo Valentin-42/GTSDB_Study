@@ -31,8 +31,8 @@ def compute_metrics(detections, ground_truth, iou_threshold=0.5) :
         if iou > iou_threshold :
             TP += 1
             # remove the ground truth from the dataframe
-            ground_truth = ground_truth[ground_truth["image_name"] != det["image_name"]]
-            
+            gt.drop(gt.index, inplace=True)
+
         # if the iou is below the threshold, it's a false positive
         else :
             FP += 1

@@ -190,8 +190,8 @@ def train(path_to_weights, path_to_config,epochs) :
     data     = path_to_config
     device   = 1
     exist_ok = True
-    cache = True
-    batch = 64
+    cache = False
+    batch = 32
     project_name = "GTSDB_Training"
     name = '44_classes'
     optimizer = 'SGD'
