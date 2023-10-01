@@ -3,10 +3,10 @@ import os
 import argparse
 import pandas as pd
 
-def detect(weights) :
+def detect(weights, set_path) :
     
     model = YOLO(weights)
-    model('./datasets/GTSDB/test/images/', save=True, save_txt=True, save_conf=True)
+    model(set_path, save=True, save_txt=True, save_conf=True)
 
     print("Done!")
 
@@ -33,4 +33,6 @@ if __name__ == "__main__" :
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-w", default="yolov8n.pt", help = "path to .pt")
-    detect_v2(parser.parse_args().w)
+    parser.add_argument("-s", default="./datasets/GTSDB44/test/images/", help = "path to img folder")
+    # detect_v2(parser.parse_args().w)
+    detect(parser.parse_args().w, parser.parse_args().s)

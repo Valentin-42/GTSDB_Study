@@ -4,6 +4,7 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import shutil
 
 # function input :  
 # detections : pandas df with columns : "image_name", "x_center", "y_center", "width", "height", "class"
@@ -100,13 +101,34 @@ def compute_iou(det, gt) :
 # TP detection should be in green, FP in red, FN in blue, TN in orange
 # class of the detection should be written next to the detection
 # ground truths should be plotted next to the detection in a subplot
-def plot(detections, ground_truth) :
+def plot_and_save(detections, ground_truth, output_path) :
     
+        show = True
+
+        # create tp tn fp fn folders in output path
+        tp_path = os.path.join(output_path, "tp")
+        tn_path = os.path.join(output_path, "tn")
+        fp_path = os.path.join(output_path, "fp")
+        fn_path = os.path.join(output_path, "fn")
+        if os.path.exists(tp_path) :
+            shutil.rmtree(tp_path)
+        os.mkdir(tp_path)
+        if os.path.exists(tn_path) :
+            shutil.rmtree(tn_path)
+        os.mkdir(tn_path)
+        if os.path.exists(fp_path) :
+            shutil.rmtree(fp_path)    
+        os.mkdir(fp_path)
+        if os.path.exists(fn_path) :
+            shutil.rmtree(fn_path)
+        os.mkdir(fn_path)
+
         # get the list of images
         images = detections["image_name"].unique()
     
         # for each image
         for image_name in images :
+            image_type = []
             # get the detections for this image
             dets = detections[detections["image_name"] == image_name]
             # get the ground truths for this image
@@ -138,6 +160,8 @@ def plot(detections, ground_truth) :
                 cv2.rectangle(image_dt, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
                 # write the class next to the detection
                 cv2.putText(image_dt, class_name, (int(x1), int(y1)), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+                #
+                image_type.append(type_det)
             # plot the ground truths
             for index_gt, gt in gts.iterrows() :
                 # get the coordinates of the ground truth
@@ -151,7 +175,20 @@ def plot(detections, ground_truth) :
             plt.subplot(1,2,2).imshow(image_dt)
             plt.axes('off')
             plt.title(image_name)
-            plt.show()
+            if show :
+                plt.show()
             k = input("Press any key to continue")
             if k == "q" :
                 exit()
+            if k == "p" :
+                show = False
+
+            # save the image
+            if "TP" in image_type :
+                cv2.imwrite(os.path.join(tp_path, os.path.basename(image_name)), image)
+            elif "TN" in image_type :
+                cv2.imwrite(os.path.join(tn_path, os.path.basename(image_name)), image)
+            elif "FP" in image_type :
+                cv2.imwrite(os.path.join(fp_path, os.path.basename(image_name)), image)
+            elif "FN" in image_type :
+                cv2.imwrite(os.path.join(fn_path, os.path.basename(image_name)), image)
