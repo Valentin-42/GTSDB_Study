@@ -123,7 +123,7 @@ def plot_bounding_boxes(df, root="./") :
     return images_with_bounding_boxes
 
 
-#visualize function loads a label txt file with format <object-class> <x_center> <y_center> <width> <height> normalized
+# visualize function loads a label txt file with format <object-class> <x_center> <y_center> <width> <height> normalized
 # and displays the image with the bounding boxes 
 def visualize(img, label) :
     img = cv2.imread(img)
@@ -134,16 +134,17 @@ def visualize(img, label) :
     # plot the bounding boxes
     for _, row in label.iterrows() :
         h, w, _ = img.shape
-        x_center = int(row[1])
-        y_center = int(row[2])
-        width = int(row[3])
-        height = int(row[4])
+        class_id = int(row[0])
+        x_center = float(row[1])
+        y_center = float(row[2])
+        width = float(row[3])
+        height = float(row[4])
         if x_center < 1 and y_center < 1 and width < 1 and height < 1 :
             x_center = int(x_center * w)
             y_center = int(y_center * h)
             width = int(width * w)
             height = int(height * h)
-
+        cv2.putText(img, str(class_id), (x_center+width, y_center+height//2), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         cv2.rectangle(img, (x_center - width//2, y_center - height//2), (x_center + width//2, y_center + height//2), (0, 255, 0), 2)
     return img
 
@@ -190,6 +191,66 @@ def extract_json(json_path):
     df = pd.DataFrame(rows, columns=["imagename", "object-class", "x_center", "y_center", "width", "height"])
     return df
 
+
+# Create a function that loads gt.txt in a dataframe like in format_annotation_GTSDB_to_YOLOv3
+# Add to the dataframe the given argument which is a list of new detection
+# Save the dataframe in a txt file with a name like gt_new.txt
+# Use visualize function to visualize the new detections on the images
+def add_new_detections_to_gt(gt_path, new_detection, save=True, show=True) :
+    # load gt.txt in a dataframe like in format_annotation_GTSDB_to_YOLOv3
+    df = pd.read_csv(gt_path, sep=";", header=None)
+    df.columns = ["imagename", "leftCol", "topRow", "rightCol", "bottomRow", "ClassID"]
+
+    # Add to the dataframe the given argument which is a list of new detection
+    for dt in new_detection :
+        if dt[0] == "00274.ppm" :
+            dt[5] = 44
+        if dt[0] == "00304.ppm" :
+            dt[5] = 43
+        if dt[0] == "00544.ppm" :
+            dt[5] = 43
+        if dt[0] == "00673.ppm" :
+            dt[5] = 43
+    
+    print("New detections : {}".format(new_detection))
+    new_detection_df = pd.DataFrame(new_detection, columns=["imagename", "leftCol", "topRow", "rightCol", "bottomRow", "ClassID"])
+    
+    
+    df = pd.concat([df, new_detection_df], ignore_index=True)
+    show=False
+    if show :
+        # Use visualize function to visualize the new detections on the images
+        for x in new_detection :
+            img_name = x[0]
+            print(img_name)
+            df_to_show = df[df["imagename"] == img_name]
+            print(df)
+            
+            df_to_show['x_center'] = (df_to_show['leftCol'] + df_to_show['rightCol']) / 2
+            df_to_show['y_center'] = (df_to_show['topRow'] + df_to_show['bottomRow']) / 2
+            df_to_show['width'] = df_to_show['rightCol'] - df_to_show['leftCol']
+            df_to_show['height'] = df_to_show['bottomRow'] - df_to_show['topRow']
+            df_to_show = df_to_show[["ClassID", "x_center", "y_center", "width", "height"]]
+
+            img = visualize(os.path.join("./datasets/full/raw/", img_name), df_to_show)
+            plt.imshow(img)
+            plt.show()
+            plt.close()
+            k = input("Press Enter to continue...")
+            if k =="q" :
+                exit()
+            if k == "p" :
+                show = False
+                break    
+    # Save the dataframe in a txt file with a name like gt_new.txt in the same directory as gt.txt
+    if save :
+        # get folder path of gt.txt
+        gt_folder_path = os.path.dirname(gt_path)
+        df.to_csv(gt_folder_path + "/" + gt_path.split("/")[-1].split(".")[0] + "_new.txt", sep=";", header=False, index=False)
+        # df.to_csv(gt_path.].split(".")[0] + "_new.txt", sep=";", header=False, index=False)
+        print("New gt file created : {}".format(gt_path.split("/")[-1].split(".")[0] + "_new.txt"))
+    
+    return df
 
 if __name__ == "__main__":
     df = (extract_json("GTSDB.json"))

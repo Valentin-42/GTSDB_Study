@@ -138,9 +138,10 @@ class Dataset() :
         if len(images_paths) != len(labels_paths) :
             raise Exception("Some images do not have a label")
 
-        self.df_dt, self.df_stats = self.__sets_stats(images_paths, labels_paths)
+        self.df_dt, self.df_stats, self.empty_images = self.__sets_stats(images_paths, labels_paths)
         self.__plot_stats(False)
-        self.__create_train_val_test()
+        # self.__create_train_val_test()
+        self.__create_class_uniform_train_val_test()
 
     # Sets must contain equivalent number of classes and size of bounding boxes
     # Load the labels txt files in a dataframe
@@ -240,7 +241,7 @@ class Dataset() :
         df_stats["mean_area_per_class"]   = mean_area_per_class
         df_stats["std_area_per_class"]    = std_area_per_class
         
-        return df_detections, df_stats
+        return df_detections, df_stats, empty_images
 
     # Use defined dataframes to plot :
     # Plot the repartition of the classes along the images
@@ -351,6 +352,7 @@ class Dataset() :
         # Extract from self.df_dt the images name and the corresponding height in a list
         images_height  = self.df_dt.groupby("imagename")["height"].apply(list).to_dict()
         images_classes = self.df_dt.groupby("imagename")["object-class"].apply(list).to_dict()
+        class_distribution = self.df_dt['object-class'].value_counts().to_dict()
         images_width   = self.df_dt.groupby("imagename")["width"].apply(list).to_dict()
 
         image_score = {}
@@ -408,6 +410,115 @@ class Dataset() :
             exit()
         self.__create_fld_architecture()
         self.__move_images_and_labels(train, val, test)
+        self.__plot_class_repartition(train,val,test)
+
+
+    def __create_class_uniform_train_val_test(self) : 
+        # Extract from self.df_dt the images name and the corresponding height in a list
+        images_classes = self.df_dt.groupby("imagename")["object-class"].apply(list).to_dict()
+        for im in self.empty_images :
+            images_classes[im] = ["-1"]
+
+        class_distribution = {}
+        for k,v in images_classes.items() :
+            for c in v :
+                if c in class_distribution :
+                    class_distribution[c] += 1
+                else :
+                    class_distribution[c] = 1
+
+        train_class_distribution = {}
+        val_class_distribution = {}
+        test_class_distribution = {}
+
+        for k,v in class_distribution.items() :
+            if int(v * self.ratio_train) < 1 or int(v * self.ratio_val) < 1 or int(v * self.ratio_test) < 1 :
+                if v >= 3 :
+                    train_class_distribution[k] = 1
+                    val_class_distribution[k] = 1
+                    test_class_distribution[k] = v-2
+                    print(f"Class {k} : train : 1 / val : 1 / test : {v-2}")
+                else :
+                    print(f"Class {k} has too few images to be split : {v}")
+            else :
+                train_class_distribution[k] = int(v * self.ratio_train)
+                val_class_distribution[k] = int(v * self.ratio_val)
+                test_class_distribution[k] = int(v * self.ratio_test)
+
+        # Create uniform sets       
+        print(test_class_distribution)
+         
+        train,test, train_class_distribution, test_class_distribution, images_ = self.__split(images_classes,train_class_distribution,test_class_distribution)
+        val,test, val_class_distribution, test_class_distribution, images_  = self.__split(images_,val_class_distribution,test_class_distribution)
+
+        print(test_class_distribution)
+        for c in test_class_distribution :
+            done = False
+            if test_class_distribution[c] >= 0 :
+                print(c, test_class_distribution[c])
+                for im in train :
+                    if c in images_classes[im] and not done:
+                        train.remove(im)
+                        test.append(im)
+                        test_class_distribution[c] = 0
+                        done = True
+    
+        # verify that an image in a is not in the other
+        for im in train :
+            if im in val or im in test :
+                raise Exception("An image is in train and val or test")
+            if im in self.empty_images :
+                print("An empty image is in train")
+        for im in val :
+            if im in train or im in test :
+                raise Exception("An image is in val and train or test")
+            if im in self.empty_images :
+                print("An empty image is in val")
+        for im in test :
+            if im in train or im in val :
+                raise Exception("An image is in test and train or val") 
+            if im in self.empty_images :
+                print("An empty image is in test")
+        
+        print("Done splitting : ")
+        print(len(images_classes), len(train), len(val), len(test), sum([len(train), len(val), len(test)]))   
+        # self.__plot_class_repartition(train,val,test)
+        k = input("Press [Enter] : continue | [q] cancel |")
+        if k == "q" :
+            exit()
+        self.__create_fld_architecture()
+        self.__move_images_and_labels(train, val, test)
+        # self.__plot_class_repartition(train,val,test)
+
+
+    def __split(self, images_classes,train_class_distribution,test_class_distribution) :
+        train = []
+        test = []
+        im_to_pop = []
+        images_classes = images_classes.copy()
+        train_class_distribution = train_class_distribution.copy()
+        test_class_distribution = test_class_distribution.copy()
+        for im,classes in images_classes.items() :
+            add_to_train_set = False
+            for c in classes :
+                if train_class_distribution[c] > 0 :
+                    add_to_train_set = True
+            
+            if add_to_train_set :
+                for c in classes :
+                    train_class_distribution[c] -= 1
+                train.append(im)
+                im_to_pop.append(im)
+
+            else :
+                for c in classes :
+                    test_class_distribution[c] -= 1
+                test.append(im)
+
+        for im in im_to_pop :
+            images_classes.pop(im)
+
+        return train, test, train_class_distribution, test_class_distribution, images_classes
 
     def __create_fld_architecture(self) :
         # create the dataset folder
@@ -462,6 +573,57 @@ class Dataset() :
         self.number_of_val_images = val_c
         print("Images and labels moved to the train, val and test sets")
         
+
+    # this function plots the class repartition is the train, val and test sets folders
+    # 3 subplots : one for each set and use barh to plot the repartition of the classes
+    # args : train val and test are the list of images in the train, val and test sets
+    def __plot_class_repartition(self, train, val, test) :
+        train_classes = []
+        val_classes = []
+        test_classes = []
+        for im in train :
+            lb = im.split(".")[0] + self.labels_extension_ftype
+            lb_path = os.path.join(self.raw_labels_path, lb)
+            if not os.path.getsize(lb_path) > 0 :
+                train_classes.append("empty")
+            with open(lb_path, "r") as f :
+                lines = f.readlines()
+                lines = [line.strip() for line in lines]
+                train_classes.extend([line.split(" ")[0] for line in lines])
+        for im in val :
+            lb = im.split(".")[0] + self.labels_extension_ftype
+            lb_path = os.path.join(self.raw_labels_path, lb)
+            if not os.path.getsize(lb_path) > 0 :
+                val_classes.append("empty")
+            with open(lb_path, "r") as f :
+                lines = f.readlines()
+                lines = [line.strip() for line in lines]
+                val_classes.extend([line.split(" ")[0] for line in lines])
+        for im in test :
+            lb = im.split(".")[0] + self.labels_extension_ftype
+            lb_path = os.path.join(self.raw_labels_path, lb)
+            if not os.path.getsize(lb_path) > 0 :
+                test_classes.append("empty")
+            with open(lb_path, "r") as f :
+                lines = f.readlines()
+                lines = [line.strip() for line in lines]
+                test_classes.extend([line.split(" ")[0] for line in lines])
+        
+        train_classes = pd.Series(train_classes).value_counts().sort_index()
+        val_classes = pd.Series(val_classes).value_counts().sort_index()
+        test_classes = pd.Series(test_classes).value_counts().sort_index()
+        classes = pd.concat([train_classes, val_classes, test_classes], axis=1)
+        ax = classes.plot(kind='barh', stacked=True, figsize=(10, 6))
+        plt.xlabel('Counts')
+        plt.ylabel('Label')
+        plt.title('Cumulative repartition of classes along sets')
+
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(['train','val','test'], title='Split Type', loc='upper right')
+        plt.show()
+
+        
+
     # Set param function loads a yaml file containing the parameters of the dataset :
     # - the name of the dataset
     # - the ratio of images in the train set

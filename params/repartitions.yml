@@ -43,3 +43,8 @@
   41 : 3 # restriction ends (overtaking)
   42 : 3 # restriction ends (overtaking (trucks))
 
+map1 :
+  19 : 36
+  31 : 30
+  37 : 26
+

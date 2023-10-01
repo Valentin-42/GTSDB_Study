@@ -28,7 +28,6 @@ def get_average_size_color_shape(img_dir) :
     print(f"Done {len(os.listdir(img_dir))} images")
     return img_size, img_color, img_shape
 
-
 def create_fld() :
     #create a classify folder
     # remove it if it already exists
@@ -37,7 +36,6 @@ def create_fld() :
     os.mkdir("./classify/")
 
     return "./classify/"
-
 
 def extract_ROIS(img_path, label, output_fld):
     # extract each object in ROIs
@@ -73,7 +71,6 @@ def extract_ROIS(img_path, label, output_fld):
         cv2.imwrite(output_fld + img_name.split(".")[0] + "_" + str(i) + ".png", sign)
         print(output_fld + img_name.split(".")[0] + "_" + str(i) + ".png")
         i+=1
-
 
 def extract_hog_features(image_path):
     show = False
@@ -153,12 +150,103 @@ def extract_hog_features(image_path):
     return features
 
 def cluster(feature_vector) :
-    num_clusters = 2
 
+    # check length of feature vector
+    print("Number of images : ", len(feature_vector))
+    length_inside = [len(x) for x in feature_vector]
+    print("Number of feature per image : ", length_inside)
+
+    # Create a feature matrix by stacking the pairs (row:image index, col:feature vector)
+    feature_matrix = np.vstack(feature_vector)
+    feature_matrix = np.array(feature_matrix, dtype=np.float32)
+    
     # Apply K-means clustering
-    kmeans = KMeans(n_clusters=num_clusters)
-    kmeans.fit(feature_vector)
+    num_clusters = 2
+    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+    kmeans.fit(feature_matrix)
 
     cluster_labels = kmeans.labels_
+    return cluster_labels
 
-    print(cluster_labels)
+def color_based_feature_extraction(img_path, label) :
+
+    show=False
+    img_name = img_path.split("/")[-1]
+    feature_w = 30 
+    feature_h = 30  
+
+    feature_vector = []
+    signs = []
+    idx = 2
+    for _, row in label.iterrows() :
+        # extract the ROI
+        x_center = int(row[1])
+        y_center = int(row[2])
+        width = int(row[3])
+        height = int(row[4])
+
+        img = cv2.imread(img_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        sign = img[(y_center - height//2):(y_center + height//2), (x_center - width//2):(x_center + width//2)]
+        sign_top_right_cell = img[(y_center - height//3):(y_center + height//3), (x_center - width//3):(x_center + width//3)]
+        # sign_top_right_cell = img[(y_center - height//3):(y_center), (x_center):(x_center + width//3)]
+        # get number of red pixels
+
+        max_red = get_max_pixel_value(sign_top_right_cell,'red')
+        max_blue = get_max_pixel_value(sign_top_right_cell,'blue')
+        max_green = get_max_pixel_value(sign_top_right_cell,'green')
+
+        red_channel   = (sign_top_right_cell[:,:,0] ) / max_red # btw 0 and 255
+        blue_channel  = (sign_top_right_cell[:,:,2] ) / max_blue
+        green_channel = (sign_top_right_cell[:,:,1] ) / max_green
+
+        red_channel = cv2.resize(red_channel, (feature_w, feature_h))
+        blue_channel = cv2.resize(blue_channel, (feature_w, feature_h))
+        green_channel = cv2.resize(blue_channel, (feature_w, feature_h))
+
+        n_im = ((1)*red_channel + (0)*blue_channel + (0)*green_channel)
+
+        sobel_kernel = np.array([[-1,  0,  1],
+                                 [-2,  0,  2],
+                                 [-1,  0,  1]])
+        
+        diagonal_edges = cv2.filter2D(n_im, -1, sobel_kernel)
+
+
+        img = cv2.imread(img_path)
+        plt.subplot(1,len(label.columns),1).imshow(img)
+        plt.subplot(1,len(label.columns),idx).imshow(sign)
+        idx +=1
+        if show==True :
+            plt.show()
+            key = input("Press [Enter] : continue [q] : quit [p] : finish")
+            plt.close()
+            if key == "q" :
+                exit()
+        else :
+            # plt.savefig("./classify/" + img_name.split(".")[0] + "_" + str(len(feature_vector)) + ".png")
+            # feature_vector.append((red_channel.flatten(), blue_channel.flatten(), green_channel.flatten()))
+            
+            # feature_vector.append((red_channel+blue_channel+green_channel).flatten())
+            feature_vector.append(diagonal_edges.flatten())
+            signs.append(sign)
+
+
+    return feature_vector,signs
+
+def get_max_pixel_value(img, color) :
+    max = 0
+
+    if color == 'red' :
+        c = 0
+    elif color == 'blue' :
+        c = 1
+    elif color == 'green' :
+        c = 2
+
+    for i in range(img.shape[0]) :
+        for j in range(img.shape[1]) :
+            if img[i,j,c] > max :
+                max = img[i,j,c]
+
+    return max

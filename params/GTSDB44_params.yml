@@ -1,0 +1,9 @@
+name : GTSDB44
+
+ratio_train : 0.6
+ratio_val : 0.2
+ratio_test : 0.2
+
+classes_names_path : ./params/classes.names
+raw_images_path : ./datasets/full/raw/png/
+raw_labels_path : ./datasets/full/raw/labels/
