@@ -35,6 +35,7 @@ class Dataset() :
         self.train_fld_name = "train"
         self.val_fld_name   = "val"
         self.test_fld_name  = "test"
+        self.info_fld_name = "info"
 
         self.images_fld_name = "images"
         self.labels_fld_name = "labels"
@@ -76,6 +77,9 @@ class Dataset() :
         self.test_images_path = os.path.join(self.test_path, self.images_fld_name).replace("\\", "/")
         self.test_labels_path = os.path.join(self.test_path, self.labels_fld_name).replace("\\", "/")
 
+    def __set_dataset_info_path(self) :
+        self.info_path = os.path.join(self.root, self.name, self.info_fld_name).replace("\\", "/")
+
     def check_paths(self) :
         self.paths.extend([self.root, self.train_path, self.train_images_path, self.train_labels_path, self.val_path, self.val_images_path, self.val_labels_path, self.test_path, self.test_images_path, self.test_labels_path])
         self.image_paths.extend([self.train_images_path, self.val_images_path, self.test_images_path])
@@ -111,7 +115,6 @@ class Dataset() :
     # - the folder path containing the imagess
     def create_dataset(self, root) :
        
-        
         # filling the train val and test set
         self.__create_sets()
 
@@ -139,8 +142,8 @@ class Dataset() :
             raise Exception("Some images do not have a label")
 
         self.df_dt, self.df_stats, self.empty_images = self.__sets_stats(images_paths, labels_paths)
+        self.__create_fld_architecture()
         self.__plot_stats(False)
-        # self.__create_train_val_test()
         self.__create_class_uniform_train_val_test()
 
     # Sets must contain equivalent number of classes and size of bounding boxes
@@ -258,46 +261,49 @@ class Dataset() :
         # sort by object-class
         class_images = dict(sorted(class_images.items(), key=lambda item: int(item[0])))
         # Create a grid subplot to display all classes bases on length of class_images
+        n = int(np.sqrt(len(class_images))) + 1
+        fig, axes = plt.subplots(n, n, figsize=(7, 7))
+        fig.suptitle("Sample Images of Each Class")
+        j,k=0,0
+        for i, (class_name, elmt) in enumerate(class_images.items()) :
+            im_path = os.path.join(self.raw_images_path, elmt['imagename'])
+            image = cv2.imread(im_path)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            x_center, y_center, width, height = int(float(elmt['x_center'])), int(float(elmt['y_center'])), int(float(elmt['width'])), int(float(elmt['height']))
+
+            axes[k,j].imshow(image[y_center - height//2:y_center + height//2, x_center - width//2:x_center + width//2])
+            axes[k,j].set_title(f'Class {class_name}', fontsize=8, y=1.0, pad=1)
+            j += 1
+            if j>=n :
+                j=0
+                k+=1
+
+            print(j,k)
+
+        for p in range(0, n) :
+            for q in range(0, n) :
+                axes[p,q].axis('off')
+
         if display == True :
-            n = int(np.sqrt(len(class_images))) + 1
-            fig, axes = plt.subplots(n, n, figsize=(7, 7))
-            fig.suptitle("Sample Images of Each Class")
-            j,k=0,0
-            for i, (class_name, elmt) in enumerate(class_images.items()) :
-                im_path = os.path.join(self.raw_images_path, elmt['imagename'])
-                image = cv2.imread(im_path)
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                x_center, y_center, width, height = int(float(elmt['x_center'])), int(float(elmt['y_center'])), int(float(elmt['width'])), int(float(elmt['height']))
-
-                axes[k,j].imshow(image[y_center - height//2:y_center + height//2, x_center - width//2:x_center + width//2])
-                axes[k,j].set_title(f'Class {class_name}', fontsize=8, y=1.0, pad=1)
-                j += 1
-                if j>=n :
-                    j=0
-                    k+=1
-
-                print(j,k)
-
-            for p in range(0, n) :
-                for q in range(0, n) :
-                    axes[p,q].axis('off')
-
             plt.show()
 
+        plt.savefig(os.path.join(self.info_path, "sample_images.png").replace("\\", "/"))
 
         # Plot the repartition of the classes along the images
         class_counts = self.df_dt.value_counts("object-class")
+        plt.bar(class_counts.index, class_counts.values)
+        plt.title("Repartition of the classes along the images")
+        plt.xlabel("Classes")
+        plt.ylabel("Number of images")
+        
         if display == True :
-            plt.bar(class_counts.index, class_counts.values)
-            plt.title("Repartition of the classes along the images")
-            plt.xlabel("Classes")
-            plt.ylabel("Number of images")
-
             plt.show()
+
+        plt.savefig(os.path.join(self.info_path, "class_repartition.png").replace("\\", "/"))
 
         # For class under the tolerance, plot one image and bounding box in in a subplot to show the user the class
         classes_below_tolerance = class_counts[class_counts <= self.unbalanced_class_tolerance].index
-        if len(classes_below_tolerance) > 0 and display == True:
+        if len(classes_below_tolerance) > 0 :
             fig, axes = plt.subplots(self.unbalanced_class_tolerance + 1, len(classes_below_tolerance), figsize=(30, 30))
             fig.suptitle("Classes below tolerance")
             for i,class_name in enumerate(classes_below_tolerance):
@@ -320,8 +326,11 @@ class Dataset() :
                 cropped_img = image[y_center - height//2:y_center + height//2, x_center - width//2:x_center + width//2]
                 axes[self.unbalanced_class_tolerance][i].imshow(cropped_img)
                 axes[0][i].set_title(f'Class {class_name}')
-
+            if display == True :
                 plt.show()
+        
+        plt.savefig(os.path.join(self.info_path, "problematic_classes.png").replace("\\", "/"))
+            
 
         # Plot the repartition of the size of the bounding boxes along the classes
         df = self.df_dt.copy()
@@ -329,89 +338,25 @@ class Dataset() :
         class_sizes = df.groupby('object-class')['area'].mean()
         class_sizes = class_sizes.sort_values()
         # Create a bar chart to visualize the distribution of box sizes for each class
+        plt.figure(figsize=(12, 6))
+        plt.bar(class_sizes.index, class_sizes.values)
+        plt.title("Distribution of Bounding Box Sizes Along Classes")
+        plt.xlabel("Classes")
+        plt.ylabel("Average Box Size")
+        plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+
         if display == True :
-            plt.figure(figsize=(12, 6))
-            plt.bar(class_sizes.index, class_sizes.values)
-            plt.title("Distribution of Bounding Box Sizes Along Classes")
-            plt.xlabel("Classes")
-            plt.ylabel("Average Box Size")
-            plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
             plt.show()
+
+        plt.savefig(os.path.join(self.info_path, "size_repartition.png").replace("\\", "/"))
 
         small_objects = class_sizes.head(10).to_dict()
 
+        f = open(os.path.join(self.info_path, "problematic_summary.txt").replace("\\", "/"), "w")
         for id in small_objects :
             if id in classes_below_tolerance :
-                print("{} is under-represented and annotations part of the smallest".format(id))
-
-    # __create_train_val_test() create the train, val and test sets using the dataframe and the computed mean and std
-    # Respect the class repartition of the entire image set in every train val and tests set
-    # move image and labels using shutils
-    def __create_train_val_test(self) :
-
-        # Extract from self.df_dt the images name and the corresponding height in a list
-        images_height  = self.df_dt.groupby("imagename")["height"].apply(list).to_dict()
-        images_classes = self.df_dt.groupby("imagename")["object-class"].apply(list).to_dict()
-        class_distribution = self.df_dt['object-class'].value_counts().to_dict()
-        images_width   = self.df_dt.groupby("imagename")["width"].apply(list).to_dict()
-
-        image_score = {}
-        image_list = list(images_classes.keys())
-        for k,im in enumerate(image_list) :
-            mean_area_n = 0
-            if len(images_classes[im]) >= 1 :
-                print(im, len(images_classes[im]), images_width[im], images_height[im])
-                for i in range(0,len(images_classes[im])) :
-                    mean_area_n += (images_width[im][i] * images_height[im][i]) 
-            
-            label = "empty"
-            if mean_area_n < 1024 :
-                label = "small"
-                mean_area_n = str(min(2,len(images_classes[im]))) + " " + label
-            elif 1024 < mean_area_n < 16384 :
-                label = "medium"
-                mean_area_n = str(min(2,len(images_classes[im]))) + " " + label
-            elif mean_area_n > 16384 :
-                label = "large"
-                mean_area_n = str(min(2,len(images_classes[im]))) + " " + label
-            else :
-                label = "empty"
-                mean_area_n = label
-
-            image_score[im] = mean_area_n
-
-
-        image_scores_list = [image_score[im] for im in image_list]
-        X = image_list
-        Y = image_scores_list
-        train, test, y_train, y_test = train_test_split(X,Y, train_size=(self.ratio_train+self.ratio_val), random_state=42, stratify=Y)
-
-        # create val set from train set
-        train, val, y_train, y_val = train_test_split(train,y_train,  test_size=self.ratio_test, random_state=42, stratify=y_train)
-        print(len(train), len(val), len(test), len(X))
-        
-        train_scores = pd.Series(y_train).value_counts().sort_index()
-        val_scores = pd.Series(y_val).value_counts().sort_index()
-        test_scores = pd.Series(y_test).value_counts().sort_index()
-        scores = pd.concat([train_scores, val_scores, test_scores], axis=1)
-        ax = scores.plot(kind='barh', stacked=True, figsize=(10, 6))
-        plt.xlabel('Counts')
-        plt.ylabel('Label')
-        plt.title('Cumulative repartition of image type along sets')
-
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(['train','val','test'], title='Split Type', loc='upper right')
-        plt.show()
-
-        # ask user to confirm the repartition of the classes along the sets, if key=q then quit
-        k = input("Press [Enter] : continue | [q] quit | ? : ")
-        plt.close()
-        if k == "q" :
-            exit()
-        self.__create_fld_architecture()
-        self.__move_images_and_labels(train, val, test)
-        self.__plot_class_repartition(train,val,test)
-
+                f.write("{} is under-represented and annotations part of the smallest object size of the dataset".format(id))
+        f.close()
 
     def __create_class_uniform_train_val_test(self) : 
         # Extract from self.df_dt the images name and the corresponding height in a list
@@ -490,7 +435,6 @@ class Dataset() :
         self.__move_images_and_labels(train, val, test)
         # self.__plot_class_repartition(train,val,test)
 
-
     def __split(self, images_classes,train_class_distribution,test_class_distribution) :
         train = []
         test = []
@@ -536,6 +480,8 @@ class Dataset() :
         os.mkdir(os.path.join(parent_folder, "test"))
         os.mkdir(os.path.join(parent_folder, "test", "images").replace("\\", "/"))
         os.mkdir(os.path.join(parent_folder, "test", "labels").replace("\\", "/"))
+        # create info folder
+        os.mkdir(os.path.join(parent_folder, "info"))
 
     # Move images and labels using shutils
     # Add counter checkup to make sure that the number of images and labels in the train, val and test sets are correct
@@ -573,11 +519,10 @@ class Dataset() :
         self.number_of_val_images = val_c
         print("Images and labels moved to the train, val and test sets")
         
-
     # this function plots the class repartition is the train, val and test sets folders
     # 3 subplots : one for each set and use barh to plot the repartition of the classes
     # args : train val and test are the list of images in the train, val and test sets
-    def __plot_class_repartition(self, train, val, test) :
+    def __plot_class_repartition(self, train, val, test, show=False) :
         train_classes = []
         val_classes = []
         test_classes = []
@@ -620,10 +565,10 @@ class Dataset() :
 
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(['train','val','test'], title='Split Type', loc='upper right')
-        plt.show()
-
+        if show :
+            plt.show()
+        plt.savefig(os.path.join(self.info_path, "dataset_repartition.png").replace("\\", "/"))
         
-
     # Set param function loads a yaml file containing the parameters of the dataset :
     # - the name of the dataset
     # - the ratio of images in the train set

@@ -15,8 +15,8 @@ def part_1():
         mapping = yaml.load(f, Loader=yaml.FullLoader)
 
     GTSDB_toolbox.ppm_to_png(working_dir)
-    GTSDB_toolbox.format_annotation_GTSDB_to_YOLOv3(working_dir + "gt_new.txt", save=True, merge_classes=True, merge_classes_dict=mapping["map1"], normalize=True)
-    dataset = DS("./datasets/","GTSDB44",True,"./params/GTSDB44_params.yml")
+    # GTSDB_toolbox.format_annotation_GTSDB_to_YOLOv3(working_dir + "gt_new.txt", save=True, merge_classes=True, merge_classes_dict=mapping["map1"], normalize=True)
+    # dataset = DS("./datasets/","GTSDB44",True,"./params/GTSDB44_params.yml")
     
 def show_dataset_sample() :
 
@@ -103,6 +103,6 @@ def classify_and_add_to_gt(show=False):
 
 
 if __name__ == "__main__":
-    classify_and_add_to_gt()
+    # classify_and_add_to_gt()
     part_1()
     # show_dataset_sample()
