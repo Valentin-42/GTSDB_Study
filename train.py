@@ -188,7 +188,7 @@ def train(path_to_weights, path_to_config,epochs) :
     imgsz    = 1024
     save_period = 100
     data     = path_to_config
-    device   = 0
+    device   = 1
     exist_ok = True
     cache = True
     batch = 64
