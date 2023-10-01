@@ -193,7 +193,7 @@ def train(path_to_weights, path_to_config,epochs) :
     cache = True
     batch = 64
     project_name = "GTSDB_Training"
-    name = 'third_training_like_first_but_big_epochs'
+    name = '44_classes'
     optimizer = 'SGD'
     lr0 =float(0.01)
     lrf =float(0.01)
