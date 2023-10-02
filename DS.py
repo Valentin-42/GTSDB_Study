@@ -454,7 +454,7 @@ class Dataset() :
             
         # Adjusting , TODO : rework this splits methods
         for c in train_class_distribution :
-            if c in ["24","26","32","34","6","27"] :
+            if c in ["24","26","32","34","6","27","43"] :
                 print(c)
                 done = False
                 for im in train :
@@ -464,7 +464,16 @@ class Dataset() :
                             test.append(im)
                             done = True
 
-
+        for c in train_class_distribution :
+            if c in ["43"] :
+                print(c)
+                done = False
+                for im in train :
+                    if c in images_classes[im] :
+                        if done == False :
+                            train.remove(im)
+                            test.append(im)
+                            done = True
 
 
         # verify that an image in a is not in the other
