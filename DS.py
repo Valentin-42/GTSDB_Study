@@ -454,7 +454,7 @@ class Dataset() :
             
         # Adjusting , TODO : rework this splits methods
         for c in train_class_distribution :
-            if c in ["24","26","32","34","6"] :
+            if c in ["24","26","32","34","6","27"] :
                 print(c)
                 done = False
                 for im in train :
@@ -463,6 +463,7 @@ class Dataset() :
                             train.remove(im)
                             test.append(im)
                             done = True
+
 
 
 
