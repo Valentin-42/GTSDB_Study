@@ -34,5 +34,5 @@ if __name__ == "__main__" :
 
     parser.add_argument("-w", default="yolov8n.pt", help = "path to .pt")
     parser.add_argument("-s", default="./datasets/GTSDB44/test/images/", help = "path to img folder")
-    # detect_v2(parser.parse_args().w)
     detect(parser.parse_args().w, parser.parse_args().s)
+    detect_v2(parser.parse_args().w)

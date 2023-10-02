@@ -391,7 +391,7 @@ class Dataset() :
                 else :
                     print(f"Class {k} has too few images to be split : {v}")
             else :
-                
+
                 train_class_distribution[k] = int(v * self.ratio_train)
                 val_class_distribution[k]   = int(v * self.ratio_val)
                 test_class_distribution[k]  = int(v * self.ratio_test)
@@ -415,9 +415,21 @@ class Dataset() :
                     if c in images_classes[im] and not done:
                         train.remove(im)
                         test.append(im)
-                        test_class_distribution[c] = 0
+                        test_class_distribution[c] = -1
                         done = True
-    
+
+        for c in val_class_distribution :
+            done = False
+            if val_class_distribution[c] >= 0 :
+                print(c, val_class_distribution[c])
+                for im in train :
+                    if c in images_classes[im] and not done:
+                        train.remove(im)
+                        val.append(im)
+                        val_class_distribution[c] = -1
+                        done = True
+
+
         # verify that an image in a is not in the other
         for im in train :
             if im in val or im in test :
