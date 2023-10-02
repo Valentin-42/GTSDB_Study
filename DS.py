@@ -50,7 +50,8 @@ class Dataset() :
         self.__set_dataset_train_path()
         self.__set_dataset_val_path()
         self.__set_dataset_test_path()
-        
+        self.__set_dataset_info_path()
+
         if create_from_scratch == True and yaml_path != None :
             self.unbalanced_class_tolerance = 5 # min Number of img per class
             print(f"Creating dataset from scratch using the yaml file : {yaml_path}")
@@ -288,6 +289,7 @@ class Dataset() :
             plt.show()
 
         plt.savefig(os.path.join(self.info_path, "sample_images.png").replace("\\", "/"))
+        plt.close()
 
         # Plot the repartition of the classes along the images
         class_counts = self.df_dt.value_counts("object-class")
@@ -295,11 +297,13 @@ class Dataset() :
         plt.title("Repartition of the classes along the images")
         plt.xlabel("Classes")
         plt.ylabel("Number of images")
-        
+        plt.xticks(rotation=45)
+
         if display == True :
             plt.show()
 
         plt.savefig(os.path.join(self.info_path, "class_repartition.png").replace("\\", "/"))
+        plt.close()
 
         # For class under the tolerance, plot one image and bounding box in in a subplot to show the user the class
         classes_below_tolerance = class_counts[class_counts <= self.unbalanced_class_tolerance].index
@@ -329,7 +333,8 @@ class Dataset() :
             if display == True :
                 plt.show()
         
-        plt.savefig(os.path.join(self.info_path, "problematic_classes.png").replace("\\", "/"))
+        plt.savefig(os.path.join(self.info_path, "classes_under_represented.png").replace("\\", "/"))
+        plt.close()
             
 
         # Plot the repartition of the size of the bounding boxes along the classes
@@ -386,9 +391,14 @@ class Dataset() :
                 else :
                     print(f"Class {k} has too few images to be split : {v}")
             else :
+                
                 train_class_distribution[k] = int(v * self.ratio_train)
-                val_class_distribution[k] = int(v * self.ratio_val)
-                test_class_distribution[k] = int(v * self.ratio_test)
+                val_class_distribution[k]   = int(v * self.ratio_val)
+                test_class_distribution[k]  = int(v * self.ratio_test)
+                if k == "-1" :
+                    train_class_distribution[k] = int(v//2 * self.ratio_train)
+                    val_class_distribution[k] = int(v//2 * self.ratio_val)
+                    test_class_distribution[k] = int(v//2 * self.ratio_test)
 
         # Create uniform sets       
         print(test_class_distribution)
@@ -431,9 +441,8 @@ class Dataset() :
         k = input("Press [Enter] : continue | [q] cancel |")
         if k == "q" :
             exit()
-        self.__create_fld_architecture()
         self.__move_images_and_labels(train, val, test)
-        # self.__plot_class_repartition(train,val,test)
+        self.__plot_class_repartition(train,val,test)
 
     def __split(self, images_classes,train_class_distribution,test_class_distribution) :
         train = []
@@ -492,22 +501,29 @@ class Dataset() :
         val_c = 0
         test_c = 0
 
+        train_fp = open(os.path.join(self.info_path, "train_images.txt").replace("\\", "/"), "w")
+        val_fp = open(os.path.join(self.info_path, "val_images.txt").replace("\\", "/"), "w")
+        test_fp = open(os.path.join(self.info_path, "test_images.txt").replace("\\", "/"), "w")
+
         for i,im in enumerate(train) :
             shutil.copy(os.path.join(self.raw_images_path, im), os.path.join(self.train_images_path, im).replace("\\", "/"))
             shutil.copy(os.path.join(self.raw_labels_path, im.split(".")[0] + self.labels_extension_ftype), os.path.join(self.train_labels_path, im.split(".")[0] + self.labels_extension_ftype).replace("\\", "/"))
             train_c += 1
+            train_fp.write(im + "\n")
             print(f"Moving images and labels to the train set : {round(train_c/total*100,2)} %", end="\r")
         # move images and labels to the val set
         for i,im in enumerate(val) :
             shutil.copy(os.path.join(self.raw_images_path, im), os.path.join(self.val_images_path, im).replace("\\", "/"))
             shutil.copy(os.path.join(self.raw_labels_path, im.split(".")[0] + self.labels_extension_ftype), os.path.join(self.val_labels_path, im.split(".")[0] + self.labels_extension_ftype).replace("\\", "/"))
             val_c += 1
+            val_fp.write(im + "\n")
             print(f"Moving images and labels to the val set : {round(val_c/total*100,2)} %", end="\r")
         # move images and labels to the test set
         for i,im in enumerate(test) :
             shutil.copy(os.path.join(self.raw_images_path, im), os.path.join(self.test_images_path, im).replace("\\", "/"))
             shutil.copy(os.path.join(self.raw_labels_path, im.split(".")[0] + self.labels_extension_ftype), os.path.join(self.test_labels_path, im.split(".")[0] + self.labels_extension_ftype).replace("\\", "/"))
             test_c += 1
+            test_fp.write(im + "\n")
             print(f"Moving images and labels to the test set : {round(test_c/total*100,2)} %", end="\r")
 
         if total != train_c + val_c + test_c :
