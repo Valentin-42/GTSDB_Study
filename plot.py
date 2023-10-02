@@ -19,6 +19,8 @@ print(df.columns)
 epochs = df['epoch']
 data = df[f"{column_name}"]
 
+epochs = epochs[epochs <= 300]
+data = data.loc[epochs.index]
 # Plot the data
 plt.figure(figsize=(10, 6))
 plt.plot(epochs, data, marker='o', linestyle='-')

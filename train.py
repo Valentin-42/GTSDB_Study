@@ -184,7 +184,7 @@ def train(path_to_weights, path_to_config,epochs) :
     model = YOLO(path_to_weights)
 
     # Default params
-    epochs   = 500
+    epochs   = 300
     imgsz    = 640
     save_period = 100
     data     = path_to_config
