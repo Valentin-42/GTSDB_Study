@@ -1,8 +1,8 @@
 path : /mnt/gpu_storage/traffic-sign-detection/GTSDB_Study/
 
-train: /mnt/gpu_storage/traffic-sign-detection/GTSDB_Study/datasets/GTSDB44/train/images/
-val: /mnt/gpu_storage/traffic-sign-detection/GTSDB_Study/datasets/GTSDB44/val/images/
-test:  /mnt/gpu_storage/traffic-sign-detection/GTSDB_Study/datasets/GTSDB44/test/images/
+train: /mnt/gpu_storage/traffic-sign-detection/GTSDB_Study/datasets/GTSDB/train/images/
+val: /mnt/gpu_storage/traffic-sign-detection/GTSDB_Study/datasets/GTSDB/val/images/
+test:  /mnt/gpu_storage/traffic-sign-detection/GTSDB_Study/datasets/GTSDB/test/images/
 
 names: 
   0 : speed limit 20 
