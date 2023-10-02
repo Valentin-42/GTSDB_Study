@@ -1,6 +1,6 @@
 name : GTSDB44
 
-ratio_train : 0.6
+ratio_train : 0.8
 ratio_val : 0.2
 ratio_test : 0.2
 

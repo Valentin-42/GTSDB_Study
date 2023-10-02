@@ -405,7 +405,6 @@ class Dataset() :
 
         print("test")
         print(test_class_distribution)
-        test_class_distribution["44"] = 1
         for c in test_class_distribution :
             done = False
             counter = 0
@@ -452,12 +451,18 @@ class Dataset() :
                         train.append(im)
                         train_class_distribution[c] = -1
                         done = True
-            if c == "27" :
+            
+        # Adjusting , TODO : rework this splits methods
+        for c in train_class_distribution :
+            if c in ["24","26","32","34","6"] :
+                print(c)
+                done = False
                 for im in train :
-                    if c in images_classes[im]:
-                        train.remove(im)
-                        test.append(im)
-                        done =True
+                    if c in images_classes[im] :
+                        if done == False :
+                            train.remove(im)
+                            test.append(im)
+                            done = True
 
 
 
