@@ -195,7 +195,7 @@ def train(path_to_weights, path_to_config,epochs) :
     project_name = "GTSDB_Training"
     name = '44_classes'
     optimizer = 'SGD'
-    lr0 =float(0.01)
+    lr0 =float(0.005)
     lrf =float(0.01)
     box = 7.5
     cls = 0.5
