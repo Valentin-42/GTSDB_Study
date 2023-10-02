@@ -241,7 +241,7 @@ def plot_and_save(detections, ground_truth,img_fld_path ,output_path) :
 
 
 def analyze() :
-    working_dir = "./analyze/"
+    working_dir = "./analyze/40/"
 
     predictions_fld = os.path.join(working_dir, "predict","labels").replace("\\","/")
     ground_truth_fld = os.path.join(working_dir, "predict","gt").replace("\\","/")
