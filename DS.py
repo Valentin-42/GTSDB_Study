@@ -380,7 +380,6 @@ class Dataset() :
         train_class_distribution = {}
         val_class_distribution = {}
         test_class_distribution = {}
-
         for k,v in class_distribution.items() :
             if int(v * self.ratio_train) < 1 or int(v * self.ratio_val) < 1 or int(v * self.ratio_test) < 1 :
                 if v >= 3 :
@@ -401,33 +400,65 @@ class Dataset() :
                     test_class_distribution[k] = int(v//2 * self.ratio_test)
 
         # Create uniform sets       
-        print(test_class_distribution)
-         
         train,test, train_class_distribution, test_class_distribution, images_ = self.__split(images_classes,train_class_distribution,test_class_distribution)
         val,test, val_class_distribution, test_class_distribution, images_  = self.__split(images_,val_class_distribution,test_class_distribution)
 
+        print("test")
         print(test_class_distribution)
+        test_class_distribution["44"] = 1
         for c in test_class_distribution :
             done = False
-            if test_class_distribution[c] >= 0 :
+            counter = 0
+            if test_class_distribution[c] >= 0:
                 print(c, test_class_distribution[c])
                 for im in train :
-                    if c in images_classes[im] and not done:
+                    if c in images_classes[im] and not done :
+                        counter +=1 
+                    if counter >= 2 and not done :
                         train.remove(im)
                         test.append(im)
                         test_class_distribution[c] = -1
                         done = True
 
+        print("val")
+        print(val_class_distribution)
         for c in val_class_distribution :
             done = False
-            if val_class_distribution[c] >= 0 :
+            counter = 0
+            if val_class_distribution[c] >= 0  :
                 print(c, val_class_distribution[c])
                 for im in train :
-                    if c in images_classes[im] and not done:
+                    if c in images_classes[im] and not done :
+                        counter +=1 
+                    if counter >= 2 and not done :
                         train.remove(im)
                         val.append(im)
                         val_class_distribution[c] = -1
                         done = True
+        
+        print("train")
+        train_class_distribution['0'] = 1
+        print(train_class_distribution)
+        for c in train_class_distribution :
+            done = False
+            counter = 0
+            if train_class_distribution[c] >= 0  :
+                print(c, train_class_distribution[c])
+                for im in test :
+                    if c in images_classes[im] and not done :
+                        counter +=1 
+                    if counter >= 2 and not done :
+                        test.remove(im)
+                        train.append(im)
+                        train_class_distribution[c] = -1
+                        done = True
+            if c == "27" :
+                for im in train :
+                    if c in images_classes[im]:
+                        train.remove(im)
+                        test.append(im)
+                        done =True
+
 
 
         # verify that an image in a is not in the other
