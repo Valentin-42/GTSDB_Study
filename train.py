@@ -184,7 +184,7 @@ def train(path_to_weights, path_to_config,epochs) :
     model = YOLO(path_to_weights)
 
     # Default params
-    epochs   = 250
+    epochs   = 500
     imgsz    = 640
     save_period = 100
     data     = path_to_config
@@ -193,7 +193,7 @@ def train(path_to_weights, path_to_config,epochs) :
     cache = False
     batch = 32
     project_name = "GTSDB_Training"
-    name = '44_classes'
+    name = '40_classes'
     optimizer = 'SGD'
     lr0 =float(0.01)
     lrf =float(0.01)
